@@ -1,0 +1,894 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package TNVL;
+
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.Label;
+import java.awt.Polygon;
+import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Random;
+import java.util.TimerTask;
+import javax.swing.ImageIcon;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.JSlider;
+import javax.swing.plaf.basic.BasicSliderUI;
+
+/**
+ *
+ * @author dell
+ */
+public class NewJFrame extends javax.swing.JFrame {
+
+    private static ImageIcon img;
+
+    private int count, n, ne[];
+    private static double v, a, W, U, lamda, xmin, xmax, A, cd, Uh;
+    private final double dt, e, m, d, h, c;
+    private final int w;
+    private int mau_hex;
+    private int alpha;
+    private int x1;
+    private Random rd = new Random();
+    private Image img_mau;
+    private Image img_mau1;
+    private Image bg;
+    private BufferedImage bufimg;
+    private static Image icon = new ImageIcon("src/image/icon.png").getImage();
+    private final int RED = 130;
+    private final int ORANGE = 106;
+    private final int YELLOW = 95;
+    private final int GREEN = 60;
+    private final int BLUE = 21;
+    private final int INDIGO = 12;
+    private final int PURPLE = 0;
+    private static javax.swing.JFrame frame1, frame2, frame3;
+    static Plank mainPanel1;
+    static UI_V1 mainPanel2;
+    static UI_V2 mainPanel3;
+
+    class Electron {
+
+        public ImageIcon imge;
+        public int x_px, y;
+        public double x, v, a, t;
+
+        public Electron(int x_px, double x, int y, double v, ImageIcon imge) {
+            this.x_px = x_px;
+            this.x = x;
+            this.y = y;
+            this.v = v;
+            this.imge = img;
+        }
+    }
+
+    LinkedList<Electron> ll;
+    static boolean tm_isrun;
+    static MyTimer timer;
+    static MyTimerTask mytimertask;
+    static int task;
+    static Timer_control timer_control;
+
+    int xPoly[] = {450, 128, 128, 500};
+    int yPoly[] = {0, 180, 269, 0};
+    Polygon poly = new Polygon(xPoly, yPoly, xPoly.length);
+
+    Label lb, lb1;
+
+    javax.swing.JTextField tf1;
+    javax.swing.JLabel lb2, lb3;
+
+    /**
+     * Creates new form NewJFrame
+     */
+    public NewJFrame() {
+
+        ///
+        img_mau = new ImageIcon("src//image//spectrum.png").getImage();
+        img_mau1 = new ImageIcon("src//image//spectrum2.png").getImage();
+        bg = new ImageIcon("src//image//machdien3.png").getImage();
+
+        img = new ImageIcon("src/image/electron.png");
+        ll = new LinkedList<>();
+        ne = new int[]{14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 3};
+        // Các hằng số
+        e = 1.6E-19;
+        m = 9.1E-31;
+        h = 6.625E-34;
+        lamda = 0.4E-6;
+        c = 3E8;
+        A = 3.6136E-19;
+        W = h * c / lamda - A;
+        Uh = -W / e;
+        dt = 1e-9;
+        d = 0.02;
+        a = 0;
+        v = Math.sqrt(2 * W / m);
+
+        count = -1;
+        n = 0;
+        cd = 0;
+
+        xmin = 0;
+        xmax = 0.03421052632;
+        x1 = 292;
+
+        task = 20;
+        tm_isrun = false;
+        timer_control = new Timer_control();
+        createGrayImage();
+        alpha = 0;
+        lb = new Label();
+        lb.setLocation(117, 181);
+        lb.setSize(11, 89);
+        lb.setBackground(Color.GRAY);
+        lb1 = new Label();
+        lb1.setLocation(459, 181);
+        lb1.setSize(11, 90);
+        lb1.setBackground(Color.BLACK);
+
+        lb3 = new javax.swing.JLabel();
+        lb3.setSize(50, 20);
+        lb3.setLocation(520, 276);
+        lb3.setBackground(Color.WHITE);
+        lb3.setText("0.0 µA");
+        tf1 = new javax.swing.JTextField();
+        tf1.setLocation(293, 314);
+        tf1.setSize(40, 20);
+        tf1.setText("0.0 V");
+        tf1.setBorder(null);
+        tf1.setBackground(Color.WHITE);
+        tf1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                tf1ActionPerformed(evt);
+            }
+        });
+
+        lb2 = new javax.swing.JLabel();
+        lb2.setLocation(530, 280);
+        lb2.setSize(40, 20);
+        lb2.setText("0 µA");
+        lb2.setBorder(null);
+        lb2.setBackground(Color.WHITE);
+
+        initComponents();
+        setTitle("Hiệu ứng quang điện");
+        setIconImage(icon);
+        w = jPanel1.getWidth();
+        timer_control.run();
+        jSlider2.setBackground(Color.lightGray);
+        jPanel1.add(lb3);
+    }
+
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        jMenuBar2 = new javax.swing.JMenuBar();
+        jMenu2 = new javax.swing.JMenu();
+        jMenu3 = new javax.swing.JMenu();
+        jPanel1 = new javax.swing.JPanel(){
+            @Override
+            public void paintComponent(Graphics gg){
+                super.paintComponent(gg);
+                setBackground(Color.white);
+                Graphics2D g = (Graphics2D) gg;
+                g.drawImage(bg, 0, 45,null);
+                g.setPaint(Color.GRAY);
+                g.fillRect(195,392, 196,27);
+                Color bg = new Color(mau_hex);
+                int red = bg.getRed();
+                int green = bg.getGreen();
+                int blue = bg.getBlue();
+                g.setPaint(new Color(red,green,blue,alpha));
+                g.fillPolygon(poly);
+
+                g.setColor(Color.red);
+                g.setStroke(new BasicStroke(4f));
+                g.drawLine(543,355,x1,355);
+                g.drawLine(x1, 355,x1, 398);
+                g.drawLine(x1-3, 393, x1,398);
+                g.drawLine(x1,398,x1+3, 393);
+
+                Electron[] ll_copy = ll.toArray(new Electron[ll.size()]);
+                for (int i = 0;i<ll_copy.length;i++){
+                    if (ll_copy[i]!=null){
+                        g.drawImage(ll_copy[i].imge.getImage(), ll_copy[i].x_px, ll_copy[i].y, null);
+                    }
+                }
+            }
+        };
+        jSlider4 = new javax.swing.JSlider();
+        jPanel2 = new javax.swing.JPanel(){
+            public void paintComponent(Graphics g)
+            {
+                super.paintComponent(g);
+                g.setColor(Color.BLACK);
+                g.fillRect(146,17 , 126,25);
+                g.drawImage(img_mau1,220, 17, null);
+            }
+
+        };
+        jLabel2 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        jSlider3 = new javax.swing.JSlider();
+        jTextField2 = new javax.swing.JTextField();
+        jSlider2 = new javax.swing.JSlider();
+        jMenuBar1 = new javax.swing.JMenuBar();
+        jMenu1 = new javax.swing.JMenu();
+        jMenuItem1 = new javax.swing.JMenuItem();
+        jMenuItem3 = new javax.swing.JMenuItem();
+        jMenuItem2 = new javax.swing.JMenuItem();
+
+        jMenu2.setText("File");
+        jMenuBar2.add(jMenu2);
+
+        jMenu3.setText("Edit");
+        jMenuBar2.add(jMenu3);
+
+        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+        setResizable(false);
+
+        jPanel1.add(lb);
+        jPanel1.add(lb1);
+        jPanel1.add(tf1);
+        jPanel1.setBackground(new java.awt.Color(255, 255, 255));
+        jPanel1.setPreferredSize(new java.awt.Dimension(400, 180));
+
+        jSlider4.setMaximum(40);
+        jSlider4.setMinimum(-40);
+        jSlider4.setPaintTrack(false);
+        jSlider4.setValue(0);
+        jSlider4.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                jSlider4StateChanged(evt);
+            }
+        });
+        jSlider4.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
+            public void mouseDragged(java.awt.event.MouseEvent evt) {
+                jSlider4MouseDragged(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(192, 192, 192)
+                .addComponent(jSlider4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                .addContainerGap(393, Short.MAX_VALUE)
+                .addComponent(jSlider4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(122, 122, 122))
+        );
+
+        jPanel2.setBackground(new java.awt.Color(51, 255, 255));
+        jPanel2.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+
+        jLabel2.setText("Bước sóng");
+        jLabel2.setPreferredSize(new java.awt.Dimension(120, 20));
+
+        jLabel3.setText("Cường độ ánh sáng");
+
+        jSlider3.setValue(0);
+        jSlider3.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                jSlider3StateChanged(evt);
+            }
+        });
+        jSlider3.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
+            public void mouseDragged(java.awt.event.MouseEvent evt) {
+                jSlider3MouseDragged(evt);
+            }
+        });
+
+        jTextField2.setText("400 nm");
+        jTextField2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jTextField2ActionPerformed(evt);
+            }
+        });
+
+        jSlider2.setMaximum(750);
+        jSlider2.setMinimum(200);
+        jSlider2.setPaintTrack(false);
+        jSlider2.setToolTipText("");
+        jSlider2.setValue(400);
+        //jSlider2.setUI(new mySliderUI(jSlider2));
+        jSlider2.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                jSlider2StateChanged(evt);
+            }
+        });
+        jSlider2.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
+            public void mouseDragged(java.awt.event.MouseEvent evt) {
+                jSlider2MouseDragged(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(jSlider3, javax.swing.GroupLayout.PREFERRED_SIZE, 234, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jSlider2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .addGap(33, 33, 33)
+                .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 108, Short.MAX_VALUE))
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                .addContainerGap(19, Short.MAX_VALUE)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(jSlider2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jSlider3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(36, 36, 36))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap())
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                        .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(30, 30, 30))))
+        );
+
+        jMenu1.setMnemonic('F');
+        jMenu1.setText("File");
+
+        jMenuItem1.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_A, java.awt.event.InputEvent.CTRL_MASK));
+        jMenuItem1.setMnemonic('A');
+        jMenuItem1.setText("About");
+        jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem1ActionPerformed(evt);
+            }
+        });
+        jMenu1.add(jMenuItem1);
+
+        jMenuItem3.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_H, java.awt.event.InputEvent.CTRL_MASK));
+        jMenuItem3.setMnemonic('H');
+        jMenuItem3.setText("Help");
+        jMenuItem3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem3ActionPerformed(evt);
+            }
+        });
+        jMenu1.add(jMenuItem3);
+
+        jMenuItem2.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F4, java.awt.event.InputEvent.ALT_MASK));
+        jMenuItem2.setMnemonic('E');
+        jMenuItem2.setText("Exit");
+        jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem2ActionPerformed(evt);
+            }
+        });
+        jMenu1.add(jMenuItem2);
+
+        jMenuBar1.add(jMenu1);
+
+        setJMenuBar(jMenuBar1);
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        getContentPane().setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 585, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 541, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+
+        pack();
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void createGrayImage() {
+
+        bufimg = new BufferedImage(img_mau.getWidth(null), img_mau.getHeight(null), BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = bufimg.createGraphics();
+        g2d.drawImage(img_mau, 0, 0, null);
+        g2d.dispose();
+    }
+
+    private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
+        System.exit(0);
+    }//GEN-LAST:event_jMenuItem2ActionPerformed
+
+    private void jSlider2MouseDragged(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jSlider2MouseDragged
+        jTextField2.setText(String.valueOf(jSlider2.getValue()) + " nm");
+        lamda = Double.parseDouble(String.valueOf(jSlider2.getValue()) + "E-9");
+        W = h * c / lamda - A;
+        if (W > 0) {
+            v = Math.sqrt(2 * W / m);
+            Uh = -W / e;
+        }
+        double I = 0;
+        if (cd > 0) {
+            if (U > 0) {
+                I = mainPanel2.getI();
+            } else if (U > Uh && U <= 0) {
+                I = mainPanel3.getI();
+            } else {
+                I = 0;
+            }
+        }
+        lb3.setText((int) (I * 100) / 100.0 + " µA");
+    }//GEN-LAST:event_jSlider2MouseDragged
+
+    private class mySliderUI extends BasicSliderUI {
+
+        Image knobImage;
+
+        public mySliderUI(JSlider slider) {
+            super(slider);
+            this.knobImage = new ImageIcon("src//image//e.png").getImage();
+        }
+
+        public void paintThumb(Graphics g) {
+            g.drawImage(this.knobImage, thumbRect.x, thumbRect.y, 9, 9, null);
+        }
+    }
+
+    private void jSlider2StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jSlider2StateChanged
+        int lamda = jSlider2.getValue();
+        int x = 0;
+        if (lamda < 380) // Tia tu ngoai
+        {
+            mau_hex = 0x222222;
+        } else if (lamda < 430) // Mau tim
+        {
+            x = PURPLE + (int) ((lamda - 380) / ((float) 50 / 12));
+            mau_hex = bufimg.getRGB(x, 5);
+        } else if (lamda < 450) // Mau cham`
+        {
+            x = INDIGO + (int) ((lamda - 430) / ((float) 20 / 9));
+            mau_hex = bufimg.getRGB(x, 5);
+        } else if (lamda < 500) //Mau Lam
+        {
+            x = BLUE + (int) ((lamda - 450) / ((float) 50 / 39));
+            mau_hex = bufimg.getRGB(x, 5);
+        } else if (lamda < 570) //Mau luc
+        {
+            x = GREEN + (int) ((lamda - 500) / ((float) 70 / 35));
+            mau_hex = bufimg.getRGB(x, 5);
+        } else if (lamda < 590) //Mau vang
+        {
+            x = YELLOW + (int) ((lamda - 570) / ((float) 20 / 11));
+            mau_hex = bufimg.getRGB(x, 5);
+        } else if (lamda < 640) // Mau cam
+        {
+            x = ORANGE + (int) ((lamda - 590) / ((float) 50 / 24));
+            mau_hex = bufimg.getRGB(x, 5);
+        } else if (lamda < 750) //Mau do
+        {
+            x = RED + (int) ((lamda - 640) / ((float) 110 / 70));
+            mau_hex = bufimg.getRGB(x, 5);
+        } else // Tia hong ngoai
+        {
+            mau_hex = 0x222222;
+        }
+        jTextField2.setText(String.valueOf(jSlider2.getValue()) + " nm");
+
+        mainPanel2.setA(A);
+        mainPanel2.setCd(cd);
+        mainPanel2.setLamda(Double.parseDouble(String.valueOf(lamda) + "E-9"));
+        mainPanel2.repaint();
+        mainPanel3.setA(A);
+        mainPanel3.setCd(cd);
+        mainPanel3.setLamda(Double.parseDouble(String.valueOf(lamda) + "E-9"));
+        mainPanel3.repaint();
+        mainPanel1.setF1(c / (lamda * Math.pow(10, -9)));
+        mainPanel1.repaint();
+        double I = 0;
+        if (cd > 0) {
+            if (U > 0) {
+                I = mainPanel2.getI();
+            } else if (U > Uh && U <= 0) {
+                I = mainPanel3.getI();
+            } else {
+                I = 0;
+            }
+        }
+        lb3.setText((int) (I * 100) / 100.0 + " µA");
+    }//GEN-LAST:event_jSlider2StateChanged
+
+    private void jTextField2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField2ActionPerformed
+        try {
+            jSlider2.setValue(Integer.parseInt(jTextField2.getText().replace("nm", "").replace(" ", "")));
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Dữ liệu không hợp lệ!\nHãy thay đổi dữ liệu.");
+        } finally {
+            jTextField2.setText(jSlider2.getValue() + " nm");
+            lamda = Double.parseDouble(String.valueOf(jSlider2.getValue()) + "E-9");
+            W = h * c / lamda - A;
+            if (W > 0) {
+                v = Math.sqrt(2 * W / m);
+                Uh = -W / e;
+            }
+            mainPanel3.setU(U);
+            mainPanel3.repaint();
+            mainPanel2.setU(U);
+            mainPanel2.repaint();
+            double I = 0;
+            if (cd > 0) {
+                if (U > 0) {
+                    I = mainPanel2.getI();
+                } else if (U > Uh && U <= 0) {
+                    I = mainPanel3.getI();
+                } else {
+                    I = 0;
+                }
+            }
+            lb3.setText((int) (I * 100) / 100.0 + " µA");
+        }
+    }//GEN-LAST:event_jTextField2ActionPerformed
+
+    private void jSlider3MouseDragged(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jSlider3MouseDragged
+        int tmp = jSlider3.getValue();
+        cd = (double) tmp;
+
+        if (tmp == 0) {
+            n = 0;
+        } else {
+            n = ne[tmp / 10];
+        }
+        double I = 0;
+        if (cd > 0) {
+            if (U > 0) {
+                I = mainPanel2.getI();
+            } else if (U > Uh && U <= 0) {
+                I = mainPanel3.getI();
+            } else {
+                I = 0;
+            }
+        }
+
+        lb3.setText((int) (I * 100) / 100.0 + " µA");
+    }//GEN-LAST:event_jSlider3MouseDragged
+
+    private void jSlider3StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jSlider3StateChanged
+
+        alpha = (int) (jSlider3.getValue() * ((float) 150 / 100));
+        cd = jSlider3.getValue();
+        mainPanel2.setA(A);
+        mainPanel2.setCd(cd);
+        mainPanel2.repaint();
+        mainPanel3.setA(A);
+        mainPanel3.setCd(cd);
+        mainPanel3.repaint();
+        double I = 0;
+        if (cd > 0) {
+            if (U > 0) {
+                I = mainPanel2.getI();
+            } else if (U > Uh && U <= 0) {
+                I = mainPanel3.getI();
+            } else {
+                I = 0;
+            }
+        }
+        lb3.setText((int) (I * 100) / 100.0 + " µA");
+    }//GEN-LAST:event_jSlider3StateChanged
+
+    private void jSlider4MouseDragged(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jSlider4MouseDragged
+        U = (double) jSlider4.getValue() / 10;
+        tf1.setText(U + " V");
+        a = e * U / m / d;
+        x1 = (int) ((U + 4) * 184 / 8 + 200);
+        mainPanel3.setU(U);
+        mainPanel3.repaint();
+        mainPanel2.setU(U);
+        mainPanel2.repaint();
+        jPanel1.repaint();
+        double I = 0;
+        if (cd > 0) {
+            if (U > 0) {
+                I = mainPanel2.getI();
+            } else if (U > Uh && U <= 0) {
+                I = mainPanel3.getI();
+            } else {
+                I = 0;
+            }
+        }
+        lb3.setText((int) (I * 100) / 100.0 + " µA");
+    }//GEN-LAST:event_jSlider4MouseDragged
+
+    private void jSlider4StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jSlider4StateChanged
+        U = (double) jSlider4.getValue() / 10;
+        tf1.setText(U + " V");
+        a = e * U / m / d;
+        x1 = (int) ((U + 4) * 184 / 8 + 200);
+        jPanel1.repaint();
+        mainPanel3.setU(U);
+        mainPanel3.repaint();
+        mainPanel2.setU(U);
+        mainPanel2.repaint();
+        double I = 0;
+        if (cd > 0) {
+            if (U > 0) {
+                I = mainPanel2.getI();
+            } else if (U > Uh && U <= 0) {
+                I = mainPanel3.getI();
+            } else {
+                I = 0;
+            }
+        }
+        lb3.setText((int) (I * 100) / 100.0 + " µA");
+    }//GEN-LAST:event_jSlider4StateChanged
+
+    private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
+        JOptionPane.showMessageDialog(this, "Trường Đại học Sư Phạm Kỹ Thuật thành phố Hồ Chí Minh\n"
+                + "Khoa Khoa học ứng dụng\n"
+                + "Nhóm thực hiện: sinh viên Khoa Công Nghệ Thông Tin\n"
+                + "Nguyễn Quang Thọ          16110476\n"
+                + "Nguyễn Ngọc Hoàng Vy  16110530\n"
+                + "Nguyễn Duy Bảo               16110281\n"
+                + "Nguyễn Triều Dương       16110302\n"
+                + "Lê Hoàng Công                16110286\n"
+                + "Lý Quang Minh                  16110390\n"
+                + "Dưới sự hướng dẫn của TS.Trần Hải Cát\n"
+                + "Hiệu Ứng Quang Điện (Version 1.0)", "About", JOptionPane.INFORMATION_MESSAGE);
+    }//GEN-LAST:event_jMenuItem1ActionPerformed
+
+    private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem3ActionPerformed
+        JOptionPane.showMessageDialog(this, "1.Điều chỉnh cường độ ánh sáng để thay đổi số lượng electron bứt ra Cathod\n"
+                + "2.Điều chỉnh biến trở để thay đổi hiệu điện thế\n"
+                + "3.Điều chỉnh bước sóng thay đổi ánh sáng",
+                "Help", JOptionPane.INFORMATION_MESSAGE);
+    }//GEN-LAST:event_jMenuItem3ActionPerformed
+
+    private void tf1ActionPerformed(java.awt.event.ActionEvent evt) {
+        try {
+            jSlider4.setValue((int) (Double.parseDouble(tf1.getText().replace('V', ' ').replace(" ", "")) * 10));
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Dữ liệu không hợp lệ!\nHãy thay đổi dữ liệu.");
+        } finally {
+            U = (double) jSlider4.getValue() / 10;
+            tf1.setText(U + " V");
+            a = e * U / m / d;
+            x1 = (int) ((U + 4) * 184 / 8 + 203);
+            jPanel1.repaint();
+            double I = 0;
+            if (cd > 0) {
+                if (U > 0) {
+                    I = mainPanel2.getI();
+                } else if (U > Uh && U <= 0) {
+                    I = mainPanel3.getI();
+                } else {
+                    I = 0;
+                }
+            }
+            lb3.setText((int) (I * 100) / 100.0 + " µA");
+        }
+    }
+
+    /////////////////////////////////////////////////////////
+    public class Timer_control {
+
+        public void run() {
+            if (tm_isrun == false) {
+                timer = new MyTimer(new MyTimerTask(), task);
+                tm_isrun = true;
+            }
+        }
+
+        public void pause() {
+            if (tm_isrun == true) {
+                timer.Pause();
+                tm_isrun = false;
+            }
+        }
+    }
+
+    public class MyTimerTask extends TimerTask {
+
+        @Override
+        public void run() {
+            count++;
+            for (Electron e : ll) {
+                e.t += dt;
+                e.v = e.v + a * dt;
+                e.x = e.x + e.v * dt + 0.5 * a * dt * dt;
+                e.x_px = (int) ((e.x - xmin) / (xmax - xmin) * w);
+            }
+            if (W > 0 && n > 0 && count % n == 0) {
+                ll.addLast(new Electron(117, 0.006842105263, rd.nextInt(79) + 180, rd.nextInt(3001) + v - 3000, img));
+            }
+            jPanel1.repaint();
+            int i = 0;
+            while (i < ll.size()) {
+                if (ll.get(i).x_px >= 459 || ll.get(i).x_px < 117) {
+                    ll.remove(i);
+                } else {
+                    i++;
+                }
+            }
+        }
+    }
+
+    public class MyTimer extends java.util.Timer {
+
+        public MyTimer(TimerTask mytimertask, int period) {
+            super.scheduleAtFixedRate(mytimertask, 0, period);
+        }
+
+        public void Pause() {
+            super.cancel();
+        }
+    }
+
+//////////////////////////////////////////////////////////
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String args[]) {
+        /* Set the Nimbus look and feel */
+        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         */
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+
+                }
+            }
+        } catch (ClassNotFoundException ex) {
+            java.util.logging.Logger.getLogger(NewJFrame.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
+
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(NewJFrame.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
+
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(NewJFrame.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
+
+        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(NewJFrame.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        //</editor-fold>
+
+
+        /* Create and display the form */
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+
+                new NewJFrame().setVisible(true);
+
+                createAndShowGui();
+                createAndShowGuiV1();
+                createAndShowGuiV2();
+
+            }
+        });
+
+    }
+
+    private static void createAndShowGui() {
+        List<Double> scores = new ArrayList<>();
+        int maxDataPoints = (13 + 1);
+        for (int i = 0; i < maxDataPoints; i++) {
+            scores.add((double) i);
+        }
+        mainPanel1 = new Plank(scores, A);
+        mainPanel1.setPreferredSize(new Dimension(410, 200));
+        frame1 = new JFrame("Xác định hằng số Plank");
+        frame1.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame1.getContentPane().add(mainPanel1);
+        frame1.pack();
+        frame1.setIconImage(icon);
+        frame1.setLocationRelativeTo(null);
+        frame1.setLocation(675 - 75, 0);
+        frame1.setFocusable(false);
+        frame1.setVisible(true);
+    }
+
+    private static void createAndShowGuiV1() {
+        List<Double> scores = new ArrayList<>();
+        int maxDataPoints = 10;
+        for (int i = 0; i < maxDataPoints; i++) {
+            scores.add((double) i);
+        }
+        mainPanel2 = new UI_V1(scores, lamda, cd, A);
+        mainPanel2.setPreferredSize(new Dimension(400, 200));
+        frame2 = new JFrame("Đường đặc tuyến Volt - Ampere");
+        frame2.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame2.getContentPane().add(mainPanel2);
+        frame2.pack();
+        frame2.setIconImage(icon);
+        frame2.setLocationRelativeTo(null);
+        frame2.setLocation(680 - 75, 240);
+        frame2.setFocusable(false);
+        frame2.setResizable(false); // cho thay đổi kích thước from hay không?
+        frame2.setVisible(true);
+    }
+
+    private static void createAndShowGuiV2() {
+        List<Double> scores = new ArrayList<>();
+        int maxDataPoints = 11;
+        for (int i = 0; i < maxDataPoints; i++) {
+            scores.add((double) i);
+        }
+        mainPanel3 = new UI_V2(scores, lamda, cd, A);
+        mainPanel3.setPreferredSize(new Dimension(400, 200));
+        frame3 = new JFrame("Đường đặc tuyến Volt - Ampere");
+        frame3.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame3.getContentPane().add(mainPanel3);
+        frame3.setIconImage(icon);
+        frame3.pack();
+        frame3.setLocationRelativeTo(null);
+        frame3.setLocation(680 - 75, 487);
+        frame3.setFocusable(false);
+        frame3.setResizable(false); // cho thay đổi kích thước from hay không?
+        frame3.setVisible(true);
+    }
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JMenu jMenu1;
+    private javax.swing.JMenu jMenu2;
+    private javax.swing.JMenu jMenu3;
+    private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JMenuBar jMenuBar2;
+    private javax.swing.JMenuItem jMenuItem1;
+    private javax.swing.JMenuItem jMenuItem2;
+    private javax.swing.JMenuItem jMenuItem3;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JSlider jSlider2;
+    private javax.swing.JSlider jSlider3;
+    private javax.swing.JSlider jSlider4;
+    private javax.swing.JTextField jTextField2;
+    // End of variables declaration//GEN-END:variables
+}
